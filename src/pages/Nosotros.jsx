@@ -70,7 +70,7 @@ export const Nosotros = () => {
               </h2>
               <div className="space-y-4 text-sm sm:text-base text-gray-600 leading-relaxed font-medium">
                 <p>
-                  **AGRODASIN** nació en el departamento de Santander con el claro propósito de cerrar la brecha de oportunidades en el sector rural colombiano. Históricamente, miles de pequeños productores y asociaciones organizadas no lograban acceder a los millonarios recursos de cofinanciación del estado por falta de capacidad técnica para formular propuestas viables.
+                  **AGRODASIN** — Asociación de Profesionales para el Desarrollo Agropecuario, Pesquero y Ambiental de la Depresión Momposina — fue constituida el 30 de septiembre de 2002 en Talaigua Nuevo, Bolívar, en el corazón de la Depresión Momposina. Con sede actual en Santa Marta, Magdalena, nació con el claro propósito de cerrar la brecha de oportunidades en el sector rural colombiano. Históricamente, miles de pequeños productores y asociaciones de la región Caribe no lograban acceder a los recursos de cofinanciación del Estado por falta de capacidad técnica para formular propuestas viables.
                 </p>
                 <p>
                   Desde nuestro inicio, consolidamos un equipo multidisciplinario integrado por ingenieros agrónomos, economistas especializados, trabajadores sociales y consultores de negocios. Esta visión holística nos ha permitido no solo redactar proyectos exitosos, sino acompañar al productor directamente en la tierra, asegurando que cada peso invertido se traduzca en una mejor cosecha y en el crecimiento financiero de la comunidad.

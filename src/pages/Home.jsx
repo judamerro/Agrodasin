@@ -380,7 +380,7 @@ export const Home = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800 text-sm">Línea Telefónica Directa</h4>
-                    <p className="text-sm text-gray-500 mt-1 font-semibold">+57 (300) 123-4567</p>
+                    <p className="text-sm text-gray-500 mt-1 font-semibold">+57 (305) 239-7368</p>
                   </div>
                 </div>
 
@@ -390,7 +390,7 @@ export const Home = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800 text-sm">Correo Institucional</h4>
-                    <p className="text-sm text-gray-500 mt-1 font-semibold">contacto@agrodasin.com</p>
+                    <p className="text-sm text-gray-500 mt-1 font-semibold">contacto@agrodasin.org.co</p>
                   </div>
                 </div>
 
@@ -400,7 +400,7 @@ export const Home = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800 text-sm">Oficinas Físicas</h4>
-                    <p className="text-sm text-gray-500 mt-1 font-semibold">Calle 45 # 28 - 15, Bucaramanga, Santander, Colombia</p>
+                    <p className="text-sm text-gray-500 mt-1 font-semibold">Calle 15 # 6-64 Piso 1 Local 2, Centro, Santa Marta, Magdalena</p>
                   </div>
                 </div>
               </div>
@@ -408,8 +408,8 @@ export const Home = () => {
               {/* Small Google Map Preview */}
               <div className="mt-8 rounded-2xl overflow-hidden shadow-premium border border-gray-200 h-64 bg-gray-100 relative">
                 <iframe
-                  title="Ubicación AGRODASIN Bucaramanga"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3959.083756285493!2d-73.1235654!3d7.1162358!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e683fcf6004b7ab%3A0xe54ef48ad8593450!2sBucaramanga%2C%20Santander!5e0!3m2!1ses!2sco!4v1700000000000!5m2!1ses!2sco"
+                  title="Ubicación AGRODASIN — Centro, Santa Marta, Magdalena"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15698.4!2d-74.2174!3d11.2404!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8ef4f48d23ccf99b%3A0xb45b4f1c18834d15!2sCentro%2C%20Santa%20Marta%2C%20Magdalena!5e0!3m2!1ses!2sco!4v1700000000000!5m2!1ses!2sco"
                   className="w-full h-full border-0"
                   allowFullScreen=""
                   loading="lazy"
@@ -450,63 +450,101 @@ export const Home = () => {
                 <X size={20} />
               </button>
 
-              <div className="mb-4">
-                <span className="px-3 py-1 bg-green-50 text-secondary-600 text-xs font-bold uppercase rounded-full border border-green-100">
+              {/* Estado + fecha */}
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <span className={`px-3 py-1 text-xs font-bold uppercase rounded-full border ${
+                  selectedConvocatoria.status === "Abierta"
+                    ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                    : selectedConvocatoria.status === "En Evaluación"
+                    ? "bg-amber-100 text-amber-800 border-amber-200"
+                    : "bg-rose-100 text-rose-800 border-rose-200"
+                }`}>
                   {selectedConvocatoria.status}
                 </span>
-                <span className="ml-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                {selectedConvocatoria.verificado && (
+                  <span className="px-3 py-1 text-xs font-bold uppercase rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+                    ✓ Fuente oficial
+                  </span>
+                )}
+                <span className="ml-auto text-xs font-bold text-gray-400 uppercase tracking-wider">
                   Cierre: {selectedConvocatoria.deadline}
                 </span>
               </div>
 
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight leading-snug mb-4">
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight leading-snug mb-1">
                 {selectedConvocatoria.title}
               </h3>
-
-              <div className="mb-6 rounded-xl overflow-hidden max-h-64 bg-gray-50 border border-gray-100">
-                <img
-                  src={selectedConvocatoria.image}
-                  alt={selectedConvocatoria.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              {selectedConvocatoria.entidad && (
+                <p className="text-sm font-semibold text-green-800 mb-4">{selectedConvocatoria.entidad}</p>
+              )}
 
               <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
-                <div>
-                  <h4 className="font-bold text-gray-800 text-sm mb-1 uppercase tracking-wide">Población Objetivo:</h4>
-                  <p className="bg-gray-50 p-3 rounded-xl border border-gray-100 font-medium">{selectedConvocatoria.target}</p>
-                </div>
+                {/* Monto */}
+                {selectedConvocatoria.budget && (
+                  <div className="rounded-xl bg-green-50 border border-green-100 p-4">
+                    <h4 className="font-bold text-gray-700 text-xs uppercase tracking-wide mb-1">Apoyo disponible</h4>
+                    <p className="text-green-800 font-bold text-base">{selectedConvocatoria.budget}</p>
+                  </div>
+                )}
+
+                {/* Beneficiarios */}
+                {selectedConvocatoria.beneficiarios ? (
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-xs uppercase tracking-wide mb-1">¿A quién va dirigido?</h4>
+                    <p className="bg-gray-50 p-3 rounded-xl border border-gray-100">{selectedConvocatoria.beneficiarios}</p>
+                  </div>
+                ) : (
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-xs uppercase tracking-wide mb-1">Población Objetivo</h4>
+                    <p className="bg-gray-50 p-3 rounded-xl border border-gray-100">{selectedConvocatoria.target}</p>
+                  </div>
+                )}
 
                 <div>
-                  <h4 className="font-bold text-gray-800 text-sm mb-1 uppercase tracking-wide">Descripción del Programa:</h4>
+                  <h4 className="font-bold text-gray-800 text-xs uppercase tracking-wide mb-1">Descripción del Programa</h4>
                   <p>{selectedConvocatoria.description}</p>
                 </div>
 
-                <div>
-                  <h4 className="font-bold text-gray-800 text-sm mb-2 uppercase tracking-wide">Requisitos Mínimos Solicitados:</h4>
-                  <ul className="space-y-2 pl-2">
-                    {selectedConvocatoria.requirements.map((req, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs font-semibold text-gray-600">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-600 shrink-0 mt-1.5"></span>
-                        <span>{req}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {selectedConvocatoria.requirements?.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-xs uppercase tracking-wide mb-2">Requisitos Mínimos</h4>
+                    <ul className="space-y-2 pl-1">
+                      {selectedConvocatoria.requirements.map((req, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs font-semibold text-gray-600">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-600 shrink-0 mt-1.5" />
+                          <span>{req}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-                <div>
-                  <h4 className="font-bold text-gray-800 text-sm mb-1 uppercase tracking-wide">Monto Estimado de Cofinanciación:</h4>
-                  <p className="text-secondary-600 font-extrabold text-lg">{selectedConvocatoria.budget}</p>
-                </div>
+                {selectedConvocatoria.como_postularse && (
+                  <div className="rounded-xl bg-blue-50 border border-blue-100 p-4">
+                    <h4 className="font-bold text-blue-800 text-xs uppercase tracking-wide mb-2">¿Cómo postularse?</h4>
+                    <p className="text-blue-900 text-sm leading-relaxed">{selectedConvocatoria.como_postularse}</p>
+                  </div>
+                )}
               </div>
 
-              <div className="mt-8 flex justify-end gap-3 border-t border-gray-100 pt-4">
+              <div className="mt-6 flex flex-wrap justify-end gap-3 border-t border-gray-100 pt-4">
                 <button
                   onClick={() => setSelectedConvocatoria(null)}
                   className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs uppercase tracking-wider rounded-xl transition-colors"
                 >
                   Cerrar
                 </button>
+                {selectedConvocatoria.url && (
+                  <a
+                    href={selectedConvocatoria.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => setSelectedConvocatoria(null)}
+                    className="flex items-center gap-1.5 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-md"
+                  >
+                    Portal oficial ↗
+                  </a>
+                )}
                 <Link
                   to="/contacto"
                   onClick={() => setSelectedConvocatoria(null)}
@@ -586,7 +624,7 @@ export const Home = () => {
                   Cerrar
                 </button>
                 <a
-                  href={`https://wa.me/+573001234567?text=Hola%20AGRODASIN,%20le%C3%AD%20su%20art%C3%ADculo%20"${encodeURIComponent(selectedNoticia.title)}"%20y%20me%20gustar%C3%ADa%20m%C3%A1s%20informaci%C3%B3n.`}
+                  href={`https://wa.me/573052397368?text=Hola%20AGRODASIN,%20le%C3%AD%20su%20art%C3%ADculo%20"${encodeURIComponent(selectedNoticia.title)}"%20y%20me%20gustar%C3%ADa%20m%C3%A1s%20informaci%C3%B3n.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-5 py-2.5 bg-green-700 hover:bg-green-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-md"

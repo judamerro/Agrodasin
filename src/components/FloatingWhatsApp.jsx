@@ -14,7 +14,7 @@ export const FloatingWhatsApp = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const phoneNumber = "+573001234567"; // Prefilled Colombian number
+  const phoneNumber = "+573052397368";
   const message = "Hola AGRODASIN, estoy interesado en recibir asesoría técnica y conocer más sobre sus servicios agropecuarios.";
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;

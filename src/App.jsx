@@ -16,6 +16,8 @@ import Usuarios from "./pages/Usuarios";
 import ConvocatoriasDashboard from "./pages/ConvocatoriasDashboard";
 import PlanesDashboard from "./pages/PlanesDashboard";
 import DashboardFotos from "./pages/DashboardFotos";
+import CrmDashboard from "./pages/CrmDashboard";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import NotFound from "./pages/NotFound";
 import PageLoader from "./components/PageLoader";
 
@@ -88,6 +90,22 @@ function App() {
               element={
                 <ProtectedDashboardRoute>
                   <DashboardFotos />
+                </ProtectedDashboardRoute>
+              }
+            />
+            <Route
+              path="dashboard/crm"
+              element={
+                <ProtectedDashboardRoute>
+                  <CrmDashboard />
+                </ProtectedDashboardRoute>
+              }
+            />
+            <Route
+              path="dashboard/analitica"
+              element={
+                <ProtectedDashboardRoute>
+                  <AnalyticsDashboard />
                 </ProtectedDashboardRoute>
               }
             />

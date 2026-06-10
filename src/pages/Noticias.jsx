@@ -232,7 +232,7 @@ export const Noticias = () => {
                   Cerrar
                 </button>
                 <a
-                  href={`https://wa.me/+573001234567?text=Hola%20AGRODASIN,%20le%C3%AD%20su%20art%C3%ADculo%20"${encodeURIComponent(selectedNoticia.title)}"%20y%20me%20gustar%C3%ADa%20m%C3%A1s%20informaci%C3%B3n.`}
+                  href={`https://wa.me/573052397368?text=Hola%20AGRODASIN,%20le%C3%AD%20su%20art%C3%ADculo%20"${encodeURIComponent(selectedNoticia.title)}"%20y%20me%20gustar%C3%ADa%20m%C3%A1s%20informaci%C3%B3n.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-5 py-2.5 bg-green-700 hover:bg-green-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-md"

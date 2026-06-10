@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { createClient } from "@insforge/sdk";
-import { CalendarDays, ImagePlus, LockKeyhole, Mail, Package2, Send, ShieldCheck, Users } from "lucide-react";
+import { BarChart2, CalendarDays, ImagePlus, LockKeyhole, Mail, Package2, Send, ShieldCheck, Users, ClipboardList } from "lucide-react";
+import LicitiaAlertas from "../components/LicitiaAlertas";
 
 const INSFORGE_BASE_URL = "https://56vbsgp4.us-east.insforge.app";
 const INSFORGE_ANON_KEY = "ik_17fed0a4da225dddf1a566a667c2cb37";
@@ -238,7 +239,39 @@ const Dashboard = () => {
                 Sube, organiza y revisa las imágenes del registro fotográfico.
               </p>
             </Link>
+
+            <Link
+              to="/dashboard/crm"
+              className="block rounded-3xl border border-rose-100 bg-rose-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"
+            >
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-600 text-white">
+                <ClipboardList size={22} />
+              </div>
+              <h3 className="mt-4 text-lg font-bold text-slate-900">
+                CRM — Leads de Diagnóstico
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Consulta, filtra y haz seguimiento a todos los usuarios que completaron el diagnóstico gratuito. Exporta a Excel.
+              </p>
+            </Link>
+
+            <Link
+              to="/dashboard/analitica"
+              className="block rounded-3xl border border-violet-100 bg-violet-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md"
+            >
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white">
+                <BarChart2 size={22} />
+              </div>
+              <h3 className="mt-4 text-lg font-bold text-slate-900">
+                Analítica de uso
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Embudo de conversión, distribución de score, top objetivos y departamentos. Métricas en tiempo real.
+              </p>
+            </Link>
           </div>
+
+          <LicitiaAlertas />
         </div>
       </div>
     </section>

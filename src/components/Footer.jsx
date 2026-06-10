@@ -120,18 +120,24 @@ export const Footer = () => {
             <ul className="space-y-4 text-sm font-medium">
               <li className="flex items-start gap-3">
                 <MapPin size={18} className="text-green-500 shrink-0 mt-0.5" />
-                <span>Calle 45 # 28 - 15, Bucaramanga, Santander, Colombia</span>
+                <span>Calle 15 # 6-64, Piso 1 Local 2, Centro, Santa Marta, Magdalena</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-green-500 shrink-0" />
-                <a href="tel:+573001234567" className="hover:text-secondary-500 transition-colors">
-                  +57 (300) 123-4567
+                <a href="tel:+573052397368" className="hover:text-secondary-500 transition-colors">
+                  +57 (305) 239-7368
+                </a>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone size={18} className="text-green-500 shrink-0" />
+                <a href="tel:+573015194386" className="hover:text-secondary-500 transition-colors">
+                  +57 (301) 519-4386
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-green-500 shrink-0" />
-                <a href="mailto:contacto@agrodasin.com" className="hover:text-secondary-500 transition-colors">
-                  contacto@agrodasin.com
+                <a href="mailto:contacto@agrodasin.org.co" className="hover:text-secondary-500 transition-colors">
+                  contacto@agrodasin.org.co
                 </a>
               </li>
             </ul>
@@ -168,7 +174,7 @@ export const Footer = () => {
         {/* Footer Bottom */}
         <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500">
           <p className="text-center sm:text-left">
-            © {currentYear} AGRODASIN S.A.S. Todos los derechos reservados. Bucaramanga, Colombia.
+            © {currentYear} AGRODASIN · NIT 806013024-7 · Santa Marta, Magdalena, Colombia.
           </p>
           <p className="mt-2 sm:mt-0 text-center sm:text-right font-medium">
             Desarrollado para el Fortalecimiento del Sector Agropecuario y Rural Sostenible.

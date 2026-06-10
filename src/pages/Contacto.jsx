@@ -64,7 +64,7 @@ export const Contacto = () => {
                   Sede Administrativa AGRODASIN
                 </h2>
                 <p className="text-sm sm:text-base text-gray-600 leading-relaxed font-semibold">
-                  Nuestras oficinas centrales están ubicadas en el corazón financiero de Bucaramanga, brindando soporte administrativo y técnico a todos los municipios del departamento.
+                  Sede principal en Santa Marta, Magdalena. Brindamos soporte administrativo y técnico con cobertura en la región Caribe, la Depresión Momposina y todo el territorio nacional. NIT: 806013024-7.
                 </p>
               </div>
 
@@ -78,7 +78,7 @@ export const Contacto = () => {
                   <div>
                     <h4 className="font-bold text-gray-800 text-sm mb-1">Dirección Física</h4>
                     <p className="text-xs text-gray-500 font-semibold leading-relaxed">
-                      Calle 45 # 28 - 15, Bucaramanga, Santander, Colombia
+                      Calle 15 # 6-64, Piso 1 Local 2, Barrio Centro, Santa Marta, Magdalena
                     </p>
                   </div>
                 </div>
@@ -90,10 +90,13 @@ export const Contacto = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800 text-sm mb-1">Teléfono Directo</h4>
-                    <a href="tel:+573001234567" className="text-xs font-bold text-secondary-600 hover:underline">
-                      +57 (300) 123-4567
+                    <a href="tel:+573052397368" className="text-xs font-bold text-secondary-600 hover:underline block">
+                      +57 (305) 239-7368
                     </a>
-                    <p className="text-[10px] text-gray-400 font-semibold">Soporte técnico y comercial</p>
+                    <a href="tel:+573015194386" className="text-xs font-bold text-gray-400 hover:underline block mt-0.5">
+                      +57 (301) 519-4386
+                    </a>
+                    <p className="text-[10px] text-gray-400 font-semibold mt-1">Soporte técnico y comercial</p>
                   </div>
                 </div>
 
@@ -104,11 +107,8 @@ export const Contacto = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800 text-sm mb-1">Correos Electrónicos</h4>
-                    <a href="mailto:contacto@agrodasin.com" className="text-xs font-bold text-secondary-600 hover:underline block">
-                      contacto@agrodasin.com
-                    </a>
-                    <a href="mailto:proyectos@agrodasin.com" className="text-xs font-bold text-gray-400 hover:underline block mt-0.5">
-                      proyectos@agrodasin.com
+                    <a href="mailto:contacto@agrodasin.org.co" className="text-xs font-bold text-secondary-600 hover:underline block">
+                      contacto@agrodasin.org.co
                     </a>
                   </div>
                 </div>
@@ -156,8 +156,8 @@ export const Contacto = () => {
       {/* 3. FULL-SIZE GOOGLE MAPS EMBED */}
       <section className="h-96 w-full border-t border-gray-200 bg-gray-100 relative z-10">
         <iframe
-          title="Ubicación Detallada AGRODASIN Bucaramanga"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3959.083756285493!2d-73.1235654!3d7.1162358!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e683fcf6004b7ab%3A0xe54ef48ad8593450!2sBucaramanga%2C%20Santander!5e0!3m2!1ses!2sco!4v1700000000000!5m2!1ses!2sco"
+          title="Ubicación AGRODASIN — Calle 15 # 6-64, Centro, Santa Marta, Magdalena"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15698.4!2d-74.2174!3d11.2404!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8ef4f48d23ccf99b%3A0xb45b4f1c18834d15!2sCentro%2C%20Santa%20Marta%2C%20Magdalena!5e0!3m2!1ses!2sco!4v1700000000000!5m2!1ses!2sco"
           className="w-full h-full border-none"
           allowFullScreen=""
           loading="lazy"

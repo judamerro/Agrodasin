@@ -25,4 +25,16 @@ export const licitiaApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(lead),
     }),
+
+  // Pipeline principal: recibe FormData con files, nit_identifier, objeto_proceso
+  analyzePipeline: (formData) =>
+    apiFetch("/pro/pipeline/archivos", { method: "POST", body: formData }),
+
+  // Exportar informe Excel de un resultado previo
+  exportExcel: (pipelineResult) =>
+    apiFetch("/pro/export/excel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pipelineResult),
+    }),
 };

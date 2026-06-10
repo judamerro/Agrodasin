@@ -10,6 +10,7 @@ import Contacto from "./pages/Contacto";
 import Diagnostico from "./pages/Diagnostico";
 import LicitiA from "./pages/LicitiA";
 import AgrodasinLicitia from "./pages/AgrodasinLicitia";
+import LicitiaAnalisis from "./pages/LicitiaAnalisis";
 import PruebaGratis from "./pages/PruebaGratis";
 import Dashboard from "./pages/Dashboard";
 import Usuarios from "./pages/Usuarios";
@@ -48,6 +49,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="agrodasin/licitia" element={<AgrodasinLicitia />} />
+          <Route path="agrodasin/licitia/analizar" element={<LicitiaAnalisis />} />
           <Route path="agrodasin/prueba-gratis" element={<PruebaGratis />} />
 
           {/* Main shell layouts */}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Leaf, PhoneCall, Bot, LayoutDashboard, LogOut } from "lucide-react";
+import { Menu, X, Leaf, PhoneCall, LayoutDashboard, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrollPosition } from "../hooks/useScrollPosition";
 
@@ -22,9 +22,9 @@ export const Navbar = ({ variant = "default" }) => {
     { name: "Nosotros", path: "/nosotros" },
     { name: "Servicios", path: "/servicios" },
     { name: "Convocatorias", path: "/convocatorias" },
-    { name: "🤖 LicitiA", path: "/licitia" },
+    { name: "LicitIA gratis", path: "/licitia" },
     { name: "Noticias", path: "/noticias" },
-    { name: "🎯 Diagnóstico", path: "/diagnostico" },
+    { name: "Diagnostico", path: "/diagnostico" },
     { name: "Contacto", path: "/contacto" },
   ];
 
@@ -140,13 +140,13 @@ export const Navbar = ({ variant = "default" }) => {
               }`}
             >
               {isDashboardSessionActive ? <LayoutDashboard size={16} /> : <PhoneCall size={16} />}
-              {isDashboardSessionActive ? "Dashboard" : "Asesoría Gratis"}
+              {isDashboardSessionActive ? "Dashboard" : "Asesoria gratis"}
             </Link>
             {isDashboardSessionActive && (
               <button
                 type="button"
                 onClick={handleLogout}
-                aria-label="Cerrar sesión"
+                aria-label="Cerrar sesion"
                 className={`inline-flex items-center justify-center rounded-full p-2.5 shadow-md transition-all duration-300 transform hover:-translate-y-0.5 ${
                   isScrolled
                     ? "bg-red-600/90 hover:bg-red-500 text-white"
@@ -169,7 +169,7 @@ export const Navbar = ({ variant = "default" }) => {
                     ? "text-gray-800 hover:bg-gray-100"
                     : "text-white hover:bg-white/10"
               }`}
-              aria-label="Alternar menú"
+              aria-label="Alternar menu"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -220,7 +220,7 @@ export const Navbar = ({ variant = "default" }) => {
                   className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition-colors"
                 >
                   {isDashboardSessionActive ? <LayoutDashboard size={18} /> : <PhoneCall size={18} />}
-                  {isDashboardSessionActive ? "Dashboard" : "Asesoría Gratis"}
+                  {isDashboardSessionActive ? "Dashboard" : "Asesoria gratis"}
                 </Link>
                 {isDashboardSessionActive && (
                   <button
@@ -229,7 +229,7 @@ export const Navbar = ({ variant = "default" }) => {
                       handleLogout();
                       handleLinkClick();
                     }}
-                    aria-label="Cerrar sesión"
+                    aria-label="Cerrar sesion"
                     className="flex items-center justify-center w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-md transition-colors"
                   >
                     <LogOut size={18} />

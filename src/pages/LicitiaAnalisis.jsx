@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -39,11 +39,11 @@ function demoEngine(files, nit) {
     score_total: scoreTotal,
     veredicto,
     dimensiones: [
-      { label: "Objeto social",       score: scoreObjeto,     Icon: Target },
-      { label: "CIIU / UNSPSC",       score: scoreCiiu,       Icon: Building2 },
-      { label: "Capacidad financiera",score: scoreFinanciero, Icon: TrendingUp },
-      { label: "Requisitos jurídicos",score: scoreJuridico,   Icon: Shield },
-      { label: "Experiencia",         score: scoreExperiencia,Icon: Award },
+      { label: "Objeto social",        score: scoreObjeto,     Icon: Target },
+      { label: "CIIU / UNSPSC",        score: scoreCiiu,       Icon: Building2 },
+      { label: "Capacidad financiera", score: scoreFinanciero, Icon: TrendingUp },
+      { label: "Requisitos jurídicos", score: scoreJuridico,   Icon: Shield },
+      { label: "Experiencia",          score: scoreExperiencia,Icon: Award },
     ],
     empresa: { razon_social: "Tu empresa", nit: nit || "—" },
     brechas: {
@@ -78,6 +78,143 @@ function demoEngine(files, nit) {
       { prioridad: "BAJA",  texto: "Evaluar si el pliego permite consorcio para fortalecer la capacidad financiera o técnica" },
     ],
     is_demo: true,
+  };
+}
+
+// ── Adaptador de respuesta real del backend ─────────────────────────────────────
+function mapRealResponse(data) {
+  const b0 = data.B0 || {};
+  const empresa = b0.empresa || {};
+  const pliego  = b0.pliego  || {};
+  const b1 = data.B1 || {};
+  const b2 = data.B2 || {};
+  const b3 = data.B3 || {};
+  const matriz = b3.matriz || [];
+
+  // ── Extraer puntaje y veredicto — soporte plan GRATIS (plano) y PRO (anidado) ──
+  const isGratis = b1._gratis === true;
+  let fitTotal, veredictoRaw, resumen, acciones, advertencias, objScore, ciuuScore;
+
+  if (isGratis) {
+    fitTotal      = b1.score_preliminar;
+    veredictoRaw  = String(b1.veredicto || "").trim().toUpperCase();
+    resumen       = b1.resumen_decision;
+    acciones      = b1.acciones || [];
+    advertencias  = b1.advertencias || [];
+    objScore      = b1.score_objeto_social || fitTotal;
+    ciuuScore     = b1.score_ciiu;
+  } else {
+    const scores = b1.scores || {};
+    const dec    = b1.decision || {};
+    fitTotal      = scores.fit_total || dec.fit_total;
+    if (!fitTotal && dec.resumen) {
+      const m = dec.resumen.match(/\((\d+)\/100\)/);
+      if (m) fitTotal = parseInt(m[1]);
+    }
+    veredictoRaw  = String(dec.veredicto || "").trim().toUpperCase();
+    resumen       = dec.resumen;
+    acciones      = dec.acciones || [];
+    advertencias  = dec.warnings || [];
+    objScore      = scores.fit_objeto_social || scores.fit_objeto || fitTotal;
+    ciuuScore     = scores.fit_ciiu;
+  }
+
+  fitTotal = Math.max(1, Math.min(99, fitTotal || 50));
+
+  // ── Mapear veredicto al formato interno ──
+  const VEREDICTO_MAP = {
+    "SIGA": "SIGA", "VIABLE": "SIGA",
+    "NO SIGA": "NO_SIGA", "NO_SIGA": "NO_SIGA", "NO_VIABLE": "NO_SIGA",
+    "REVISAR": "SIGA_CON_AJUSTES", "SIGA_CON_AJUSTES": "SIGA_CON_AJUSTES",
+    "REQUIERE_REVISION": "REVISION_HUMANA", "REVISION_HUMANA": "REVISION_HUMANA",
+  };
+  const veredicto = VEREDICTO_MAP[veredictoRaw] ||
+    (fitTotal >= 70 ? "SIGA" : fitTotal >= 50 ? "SIGA_CON_AJUSTES" : fitTotal >= 35 ? "REVISION_HUMANA" : "NO_SIGA");
+
+  // ── Scores financiero y habilitantes ──
+  const b2Score   = { VERDE: 82, AMARILLO: 56, ROJO: 25 }[b2.semaforo] ?? null;
+  const b3Score   = b3.score_habilitacion;
+  const expScore  = Math.max(20, fitTotal - 12);
+
+  const clamp = (v) => Math.max(1, Math.min(99, Math.round(v || 40)));
+  const dimensiones = [
+    { label: "Encaje objeto social",      score: clamp(objScore || fitTotal),             Icon: Target    },
+    { label: "CIIU / UNSPSC",             score: clamp(ciuuScore ?? (objScore || fitTotal)), Icon: Building2 },
+    { label: "Capacidad financiera",      score: clamp(b2Score ?? Math.max(30, fitTotal - 5)), Icon: TrendingUp },
+    { label: "Requisitos habilitantes",   score: clamp(b3Score ?? Math.max(20, fitTotal - 8)), Icon: Shield    },
+    { label: "Experiencia técnica",       score: clamp(expScore),                         Icon: Award     },
+  ];
+
+  // ── Brechas desde la matriz real de B3 ──
+  const cumple = [], parcial = [], falta = [];
+  const isLocked = (s) => String(s).includes("Detalle de habilitantes") || String(s).includes("🔒");
+
+  for (const req of matriz) {
+    const nombre = req.nombre || req.requisito || "";
+    if (isLocked(nombre)) continue; // skip locked rows — no las ponemos en brechas
+    const estado = String(req.estado || "").toUpperCase();
+    if (estado === "CUMPLE" || estado === "CUMPLIDO") cumple.push(nombre);
+    else if (estado.includes("PARCIAL")) parcial.push(nombre);
+    else if (nombre) falta.push(nombre);
+  }
+
+  // Complementar con advertencias si no hay datos de la matriz
+  if (cumple.length === 0 && parcial.length === 0 && falta.length === 0) {
+    const docs = b1.documentos_detectados || [];
+    if (docs.includes("CAMARA")) cumple.push("Cámara de Comercio — Certificado de existencia y representación legal");
+    if (docs.includes("RUT")) cumple.push("RUT — Registro único tributario activo");
+    if (docs.includes("PLIEGO")) cumple.push("Pliego de condiciones analizado");
+    const faltantes = b1.documentos_faltantes || [];
+    for (const f of faltantes) parcial.push(`Documento no cargado: ${f}`);
+    for (const w of advertencias.slice(0, 3)) {
+      if (typeof w === "string") parcial.push(w);
+    }
+  }
+
+  // Fallback mínimo
+  if (cumple.length + parcial.length + falta.length === 0) {
+    if (empresa.razon_social) cumple.push(`Empresa identificada: ${empresa.razon_social}`);
+    if (b2.semaforo === "VERDE") cumple.push("Indicadores financieros dentro del rango requerido");
+    else if (b2.semaforo) parcial.push("Indicadores financieros requieren verificación según el pliego");
+  }
+
+  // ── Acciones recomendadas ──
+  const accionesLista = [];
+  for (const f of falta.slice(0, 2))
+    accionesLista.push({ prioridad: "ALTA", texto: `Gestionar: ${f}` });
+  for (const p of parcial.filter((s) => s.length < 120).slice(0, 2))
+    accionesLista.push({ prioridad: "MEDIA", texto: `Verificar: ${p}` });
+  accionesLista.push(
+    { prioridad: "ALTA",  texto: "Confirmar fechas en SECOP II: cierre, audiencia de aclaración y adjudicación" },
+    { prioridad: "ALTA",  texto: "Obtener paz y salvo vigente (SENA, ICBF, Caja de Compensación)" },
+  );
+  if (b2Score !== null && b2Score < 60)
+    accionesLista.push({ prioridad: "MEDIA", texto: "Preparar estados financieros firmados por contador o revisor fiscal del último año" });
+
+  return {
+    score_total:    fitTotal,
+    veredicto,
+    empresa: {
+      razon_social: empresa.razon_social  || null,
+      nit:          empresa.nit           || null,
+      ciiu:         empresa.ciiu          || null,
+      objeto_social:empresa.objeto_social || null,
+      confianza:    empresa.empresa_confianza || null,
+    },
+    pliego_objeto:  pliego.objeto_detectado || b1.objeto_contrato_detectado || null,
+    resumen,
+    b2_semaforo:    b2.semaforo   || null,
+    b2_resumen:     b2.resumen_texto || null,
+    b3_score:       b3Score,
+    b3_total:       b3.total_detectados || (b3Score !== undefined ? 1 : null),
+    b3_cumple:      b3.total_cumple || cumple.length || null,
+    matriz_completa:matriz,
+    dimensiones,
+    brechas:        { cumple, parcial, falta },
+    acciones:       accionesLista.slice(0, 6),
+    mensaje:        isGratis ? b1.mensaje : null,
+    is_demo:        false,
+    is_gratis:      isGratis,
   };
 }
 
@@ -214,11 +351,11 @@ function DimBar({ label, score, Icon, ready }) {
 
 // ── Pasos del análisis ──────────────────────────────────────────────────────────
 const STEPS = [
-  { label: "Extrayendo texto de documentos",        ms: 600 },
-  { label: "Identificando datos de la empresa",      ms: 1100 },
-  { label: "Analizando compatibilidad del objeto",   ms: 1800 },
-  { label: "Evaluando requisitos habilitantes",      ms: 2500 },
-  { label: "Calculando score de viabilidad",         ms: 3200 },
+  { label: "Extrayendo texto de documentos",        ms: 600  },
+  { label: "Identificando datos de la empresa",     ms: 1200 },
+  { label: "Analizando compatibilidad del objeto",  ms: 1900 },
+  { label: "Evaluando requisitos habilitantes",     ms: 2600 },
+  { label: "Calculando score de viabilidad",        ms: 3300 },
 ];
 
 // ── COMPONENTE PRINCIPAL ────────────────────────────────────────────────────────
@@ -247,8 +384,8 @@ export default function LicitiaAnalisis() {
     setStage("analyzing");
 
     const apiConfigured = Boolean(import.meta.env.VITE_LICITIA_API_URL);
+    const _t0 = performance.now();
 
-    // Ejecutar análisis (demo o real) en paralelo con la animación
     let analysisPromise;
     if (apiConfigured) {
       const fd = new FormData();
@@ -260,6 +397,7 @@ export default function LicitiaAnalisis() {
         { method: "POST", body: fd }
       )
         .then((r) => r.json())
+        .then((raw) => (raw.B0 || raw.B1) ? mapRealResponse(raw) : demoEngine(allFiles, nit))
         .catch(() => demoEngine(allFiles, nit));
     } else {
       analysisPromise = new Promise((res) =>
@@ -273,9 +411,9 @@ export default function LicitiaAnalisis() {
     });
 
     const data = await analysisPromise;
-    // Esperar que la animación termine si el backend fue muy rápido
-    const remaining = Math.max(0, 3400 - (apiConfigured ? 0 : 0));
-    await new Promise((r) => setTimeout(r, remaining));
+    // Esperar a que la animación termine si el servidor respondió muy rápido
+    const elapsed = performance.now() - _t0;
+    await new Promise((r) => setTimeout(r, Math.max(0, 3500 - elapsed)));
 
     setResult(data);
     setStage("results");
@@ -463,6 +601,17 @@ export default function LicitiaAnalisis() {
                     </motion.div>
                   );
                 })}
+                {stepsDone.length >= STEPS.length && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center gap-3">
+                    <div className="shrink-0 h-6 w-6 rounded-full flex items-center justify-center bg-yellow-300/20 border border-yellow-300">
+                      <Loader2 size={12} className="text-yellow-300 animate-spin" />
+                    </div>
+                    <span className="text-sm text-white font-semibold">Generando informe de viabilidad…</span>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}
@@ -485,18 +634,123 @@ export default function LicitiaAnalisis() {
               <div className={`rounded-[28px] border ${verdictCfg.border} ${verdictCfg.bg} p-6 mb-6`}>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <ScoreGauge score={result.score_total} ready={gaugeReady} />
-                  <div className="text-center sm:text-left">
+                  <div className="text-center sm:text-left flex-1">
                     <p className="text-xs uppercase tracking-widest text-slate-400 mb-1">Veredicto LicitIA</p>
                     <h2 className={`text-3xl font-extrabold ${verdictCfg.textColor} mb-2`}>
                       {verdictCfg.label}
                     </h2>
                     <p className="text-sm text-slate-300 leading-6 max-w-sm">{verdictCfg.desc}</p>
-                    {result.empresa?.nit && result.empresa.nit !== "—" && (
-                      <p className="text-xs text-slate-500 mt-2">NIT analizado: <span className="text-slate-300 font-mono">{result.empresa.nit}</span></p>
+                    {result.resumen && (
+                      <p className="mt-3 text-xs text-slate-400 leading-5 max-w-sm italic">
+                        "{result.resumen}"
+                      </p>
+                    )}
+                    {result.empresa?.razon_social && (
+                      <p className="text-xs text-slate-500 mt-2 font-semibold">
+                        {result.empresa.razon_social}
+                        {result.empresa.nit && <span className="font-mono font-normal"> · NIT {result.empresa.nit}</span>}
+                      </p>
                     )}
                   </div>
                 </div>
               </div>
+
+              {/* Empresa y proceso identificados — solo con datos reales */}
+              {!result.is_demo && (result.empresa?.razon_social || result.pliego_objeto) && (
+                <div className="mb-6 rounded-[24px] border border-white/10 bg-white/5 p-5">
+                  <p className="text-xs uppercase tracking-widest text-yellow-200 mb-4 flex items-center gap-2">
+                    <Building2 size={12} /> Información extraída de tus documentos
+                  </p>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    {result.empresa?.razon_social && (
+                      <div className="rounded-xl bg-slate-950/40 border border-white/5 p-4">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Empresa analizada</p>
+                        <p className="text-sm font-bold text-white leading-snug">{result.empresa.razon_social}</p>
+                        {result.empresa.nit && (
+                          <p className="text-xs text-slate-400 font-mono mt-1">NIT: {result.empresa.nit}</p>
+                        )}
+                        {result.empresa.ciiu && (
+                          <p className="text-xs text-slate-400 mt-1">CIIU: {result.empresa.ciiu}</p>
+                        )}
+                        {result.empresa.objeto_social && (
+                          <p className="text-xs text-slate-500 mt-2 leading-5 line-clamp-2">
+                            {result.empresa.objeto_social}
+                          </p>
+                        )}
+                        {result.empresa.confianza && (
+                          <div className={`inline-flex items-center gap-1 mt-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                            result.empresa.confianza === "ALTA"
+                              ? "bg-green-500/15 text-green-400"
+                              : result.empresa.confianza === "MEDIA"
+                              ? "bg-yellow-500/15 text-yellow-300"
+                              : "bg-red-500/15 text-red-400"
+                          }`}>
+                            Confianza: {result.empresa.confianza}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {result.pliego_objeto && (
+                      <div className="rounded-xl bg-slate-950/40 border border-white/5 p-4">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Objeto del proceso analizado</p>
+                        <p className="text-xs text-slate-200 leading-5 line-clamp-5">{result.pliego_objeto}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Habilitantes teaser — solo con datos reales */}
+              {!result.is_demo && result.b3_total > 0 && (
+                <div className="mb-6 rounded-[24px] border border-yellow-300/25 bg-yellow-500/5 p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-yellow-200 mb-3">
+                        Requisitos habilitantes detectados en el pliego
+                      </p>
+                      <div className="flex items-center gap-6">
+                        <div className="text-center">
+                          <p className="text-3xl font-black text-white">{result.b3_total}</p>
+                          <p className="text-xs text-slate-400">total</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-3xl font-black text-green-400">{result.b3_cumple ?? "—"}</p>
+                          <p className="text-xs text-slate-400">cumplen</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-3xl font-black text-red-400">
+                            {result.b3_total != null && result.b3_cumple != null
+                              ? result.b3_total - result.b3_cumple
+                              : "—"}
+                          </p>
+                          <p className="text-xs text-slate-400">por cerrar</p>
+                        </div>
+                        {result.b3_score != null && (
+                          <div className="text-center">
+                            <p className={`text-3xl font-black ${result.b3_score >= 70 ? "text-green-400" : result.b3_score >= 50 ? "text-yellow-300" : "text-orange-400"}`}>
+                              {result.b3_score}%
+                            </p>
+                            <p className="text-xs text-slate-400">habilitación</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {result.is_gratis && (
+                      <div className="flex flex-col items-start sm:items-end gap-2">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                          <Lock size={11} /> Detalle completo en PRO
+                        </div>
+                        <button
+                          onClick={() => window.open("https://wa.me/573052397368?text=Quiero%20desbloquear%20el%20detalle%20PRO%20de%20LicitIA", "_blank")}
+                          className="rounded-full bg-yellow-300 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-yellow-200 transition"
+                        >
+                          Ver todos los habilitantes →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
 
@@ -514,42 +768,51 @@ export default function LicitiaAnalisis() {
                 <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
                   <p className="text-xs uppercase tracking-widest text-yellow-200 mb-4">Análisis de brechas</p>
                   <div className="space-y-4">
-                    <div>
-                      <p className="flex items-center gap-1.5 text-xs font-bold text-green-400 mb-2">
-                        <CheckCircle2 size={13} /> CUMPLE ({result.brechas.cumple.length})
-                      </p>
-                      <ul className="space-y-1.5">
-                        {result.brechas.cumple.map((b, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
-                            <span className="mt-0.5 text-green-500 shrink-0">✓</span> {b}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <p className="flex items-center gap-1.5 text-xs font-bold text-yellow-300 mb-2">
-                        <AlertTriangle size={13} /> PARCIAL / VERIFICAR ({result.brechas.parcial.length})
-                      </p>
-                      <ul className="space-y-1.5">
-                        {result.brechas.parcial.map((b, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
-                            <span className="mt-0.5 text-yellow-400 shrink-0">~</span> {b}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <p className="flex items-center gap-1.5 text-xs font-bold text-red-400 mb-2">
-                        <XCircle size={13} /> FALTA / GESTIONAR ({result.brechas.falta.length})
-                      </p>
-                      <ul className="space-y-1.5">
-                        {result.brechas.falta.map((b, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
-                            <span className="mt-0.5 text-red-500 shrink-0">✗</span> {b}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                    {result.brechas.cumple.length > 0 && (
+                      <div>
+                        <p className="flex items-center gap-1.5 text-xs font-bold text-green-400 mb-2">
+                          <CheckCircle2 size={13} /> CUMPLE ({result.brechas.cumple.length})
+                        </p>
+                        <ul className="space-y-1.5">
+                          {result.brechas.cumple.map((b, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
+                              <span className="mt-0.5 text-green-500 shrink-0">✓</span> {b}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {result.brechas.parcial.length > 0 && (
+                      <div>
+                        <p className="flex items-center gap-1.5 text-xs font-bold text-yellow-300 mb-2">
+                          <AlertTriangle size={13} /> PARCIAL / VERIFICAR ({result.brechas.parcial.length})
+                        </p>
+                        <ul className="space-y-1.5">
+                          {result.brechas.parcial.map((b, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
+                              <span className="mt-0.5 text-yellow-400 shrink-0">~</span> {b}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {result.brechas.falta.length > 0 && (
+                      <div>
+                        <p className="flex items-center gap-1.5 text-xs font-bold text-red-400 mb-2">
+                          <XCircle size={13} /> FALTA / GESTIONAR ({result.brechas.falta.length})
+                        </p>
+                        <ul className="space-y-1.5">
+                          {result.brechas.falta.map((b, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
+                              <span className="mt-0.5 text-red-500 shrink-0">✗</span> {b}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {result.brechas.cumple.length === 0 && result.brechas.parcial.length === 0 && result.brechas.falta.length === 0 && (
+                      <p className="text-xs text-slate-500 italic">Adjunta el pliego y los documentos de tu empresa para ver el análisis detallado.</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -584,6 +847,11 @@ export default function LicitiaAnalisis() {
                   <h3 className="text-xl font-extrabold text-white">
                     De las brechas a la oferta completa
                   </h3>
+                  {result.b3_total > 0 && result.is_gratis && (
+                    <p className="mt-2 text-sm text-slate-300">
+                      PRO desbloquea el detalle de <span className="text-yellow-300 font-bold">{result.b3_total} habilitantes</span> detectados en este proceso.
+                    </p>
+                  )}
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
                   {[
@@ -609,11 +877,11 @@ export default function LicitiaAnalisis() {
                       items: [
                         "Todo lo gratuito",
                         "Análisis ilimitados",
-                        "Habilitantes detallados",
+                        `Matriz completa de ${result.b3_total || ""} habilitantes`,
                         "Exportar informe Excel",
                         "Integración con SECOP II",
                         "Generar carta de presentación",
-                      ],
+                      ].map(s => s.replace("  ", " ").trim()),
                       cta: "Activar PRO",
                       ctaClass: "bg-yellow-300 text-slate-950 font-bold hover:bg-yellow-200",
                       locked: true,
@@ -654,7 +922,7 @@ export default function LicitiaAnalisis() {
                         ))}
                       </ul>
                       <button
-                        onClick={() => locked ? navigate("/agrodasin/prueba-gratis") : undefined}
+                        onClick={() => locked ? window.open("https://wa.me/573052397368?text=Quiero%20activar%20LicitIA%20PRO%20o%20Premium", "_blank") : undefined}
                         className={`w-full rounded-full py-2.5 text-xs transition ${ctaClass}`}
                       >
                         {cta}

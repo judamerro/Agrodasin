@@ -22,11 +22,37 @@ import ContactForm from "../components/ContactForm";
 export const Home = () => {
   const [selectedConvocatoria, setSelectedConvocatoria] = useState(null);
   const [selectedNoticia, setSelectedNoticia] = useState(null);
+  const [audioMessage, setAudioMessage] = useState("");
 
   // Take the first 3 services, first 3 news, and first 3 calls to keep the homepage concise and elegant
   const featuredServices = servicesData.slice(0, 3);
   const featuredConvocatorias = convocatoriasData.slice(0, 3);
   const featuredNoticias = noticiasData.slice(0, 3);
+
+  const handleListen = (noticia) => {
+    const text = `${noticia.title}. ${noticia.summary}. ${noticia.content}`;
+
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      setAudioMessage("Tu navegador no permite lectura en voz alta. Abrimos el artículo para que puedas leerlo completo.");
+      setSelectedNoticia(noticia);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "es-CO";
+    utterance.rate = 0.92;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+    setAudioMessage(`Reproduciendo: ${noticia.title}`);
+  };
+
+  const stopListening = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setAudioMessage("");
+  };
 
   return (
     <div className="font-sans overflow-x-hidden">
@@ -235,7 +261,7 @@ export const Home = () => {
               Evidencia real de nuestro trabajo en territorio
             </h2>
             <p className="text-base text-gray-500 font-medium">
-              Compartimos registros de proyectos, acompa?amientos, visitas t?cnicas y procesos comunitarios ejecutados por AGRODASIN.
+              Compartimos registros de proyectos, acompanamientos, visitas tecnicas y procesos comunitarios ejecutados por AGRODASIN.
             </p>
           </div>
 
@@ -311,10 +337,10 @@ export const Home = () => {
               </h2>
             </div>
             <Link
-              to="/noticias"
+              to="/blog"
               className="mt-4 sm:mt-0 inline-flex items-center gap-1 text-secondary-600 hover:text-secondary-500 font-bold text-sm tracking-wide uppercase group shrink-0"
             >
-              Ver Todo el Portal de Noticias
+              Ver Todo el Blog
               <ChevronRight size={16} className="transform group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
@@ -326,11 +352,27 @@ export const Home = () => {
                 key={noticia.id}
                 noticia={noticia}
                 onOpenDetails={setSelectedNoticia}
+                onListen={handleListen}
               />
             ))}
           </div>
         </div>
       </section>
+
+      {audioMessage && (
+        <div className="fixed bottom-6 left-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 rounded-2xl border border-emerald-200 bg-white px-5 py-4 shadow-2xl">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-semibold text-slate-700">{audioMessage}</p>
+            <button
+              type="button"
+              onClick={stopListening}
+              className="rounded-full bg-emerald-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-emerald-600"
+            >
+              Detener
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 7. TESTIMONIALS SECTION */}
       <section className="py-20 bg-white">

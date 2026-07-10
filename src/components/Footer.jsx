@@ -10,7 +10,7 @@ export const Footer = () => {
     { name: "Nosotros", path: "/nosotros" },
     { name: "Servicios", path: "/servicios" },
     { name: "Convocatorias", path: "/convocatorias" },
-    { name: "Noticias", path: "/noticias" },
+    { name: "Blog", path: "/blog" },
     { name: "Contacto", path: "/contacto" },
   ];
 

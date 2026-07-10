@@ -23,7 +23,7 @@ export const Navbar = ({ variant = "default" }) => {
     { name: "Servicios", path: "/servicios" },
     { name: "Convocatorias", path: "/convocatorias" },
     { name: "LicitIA gratis", path: "/licitia" },
-    { name: "Noticias", path: "/noticias" },
+    { name: "Blog", path: "/blog" },
     { name: "Diagnostico", path: "/diagnostico" },
     { name: "Contacto", path: "/contacto" },
   ];

@@ -9,8 +9,9 @@ export const Noticias = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Todas");
   const [selectedNoticia, setSelectedNoticia] = useState(null);
+  const [audioMessage, setAudioMessage] = useState("");
 
-  const categories = ["Todas", "Proyectos", "Capacitaciones", "Convocatorias", "Innovación"];
+  const categories = ["Todas", ...new Set(noticiasData.map((noticia) => noticia.category))];
 
   // Filter logic: text search + category match
   const filteredNoticias = noticiasData.filter((noticia) => {
@@ -24,6 +25,31 @@ export const Noticias = () => {
 
     return matchesSearch && matchesCategory;
   });
+
+  const handleListen = (noticia) => {
+    const text = `${noticia.title}. ${noticia.summary}. ${noticia.content}`;
+
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      setAudioMessage("Tu navegador no permite lectura en voz alta. Abrimos el artículo para que puedas leerlo completo.");
+      setSelectedNoticia(noticia);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "es-CO";
+    utterance.rate = 0.92;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+    setAudioMessage(`Reproduciendo: ${noticia.title}`);
+  };
+
+  const stopListening = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setAudioMessage("");
+  };
 
   return (
     <div className="font-sans bg-gray-50 min-h-screen">
@@ -44,7 +70,7 @@ export const Noticias = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white"
           >
-            Noticias & Actualidad
+            Blog AGRODASIN
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -52,14 +78,14 @@ export const Noticias = () => {
             transition={{ delay: 0.2 }}
             className="mt-4 text-base sm:text-lg text-emerald-100 max-w-2xl mx-auto font-medium"
           >
-            Descubre las últimas novedades, eventos de capacitación y reportes de proyectos productivos ejecutados en el campo.
+            Guias sencillas para que asociaciones, cooperativas y productores rurales entiendan oportunidades, documentos y compras publicas.
           </motion.p>
 
           {/* Breadcrumbs */}
           <div className="flex items-center justify-center gap-2 mt-8 text-xs font-bold uppercase tracking-wider text-secondary-400">
             <Link to="/" className="hover:text-white transition-colors">Inicio</Link>
             <ChevronRight size={12} />
-            <span className="text-white">Noticias</span>
+            <span className="text-white">Blog</span>
           </div>
         </div>
       </section>
@@ -129,6 +155,7 @@ export const Noticias = () => {
                     key={noticia.id}
                     noticia={noticia}
                     onOpenDetails={setSelectedNoticia}
+                    onListen={handleListen}
                   />
                 ))}
               </motion.div>
@@ -163,6 +190,21 @@ export const Noticias = () => {
           </AnimatePresence>
         </div>
       </section>
+
+      {audioMessage && (
+        <div className="fixed bottom-6 left-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 rounded-2xl border border-emerald-200 bg-white px-5 py-4 shadow-2xl">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-semibold text-slate-700">{audioMessage}</p>
+            <button
+              type="button"
+              onClick={stopListening}
+              className="rounded-full bg-emerald-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-emerald-600"
+            >
+              Detener
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 4. DETAILS DIALOG MODAL */}
       <AnimatePresence>

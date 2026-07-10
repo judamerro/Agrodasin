@@ -59,6 +59,7 @@ function App() {
             <Route path="servicios" element={<Servicios />} />
             <Route path="convocatorias" element={<Convocatorias />} />
             <Route path="noticias" element={<Noticias />} />
+            <Route path="blog" element={<Noticias />} />
             <Route path="contacto" element={<Contacto />} />
             <Route path="diagnostico" element={<Diagnostico />} />
             <Route path="licitia" element={<LicitiA />} />

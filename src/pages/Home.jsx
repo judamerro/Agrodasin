@@ -225,17 +225,17 @@ export const Home = () => {
       </section>
 
       {/* 4. GALLERY SECTION */}
-      <section className="py-20 bg-gray-50 border-t border-gray-100">
+      <section id="proyectos-ejecutados" className="py-20 bg-gray-50 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-xs font-extrabold uppercase tracking-widest text-secondary-600 mb-2 block">
-              Registro Fotográfico
+              Proyectos ejecutados
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900 mb-4">
-              Nuestra Labor en el Campo
+              Evidencia real de nuestro trabajo en territorio
             </h2>
             <p className="text-base text-gray-500 font-medium">
-              Una ventana a los testimonios visuales de asistencia técnica directa, escuelas de campo y cultivos prósperos certificados en Colombia.
+              Compartimos registros de proyectos, acompa?amientos, visitas t?cnicas y procesos comunitarios ejecutados por AGRODASIN.
             </p>
           </div>
 

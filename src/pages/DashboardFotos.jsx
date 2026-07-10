@@ -18,6 +18,7 @@ const DashboardFotos = () => {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [selectedImageName, setSelectedImageName] = useState("");
   const [previewSrc, setPreviewSrc] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -94,11 +95,12 @@ const DashboardFotos = () => {
     setNewTitle("");
     setNewDescription("");
     setNewImageUrl("");
+    setSelectedImageName("");
     setPreviewSrc("");
     setError("");
   };
 
-  const savePhotoToDb = async ({ titulo, descripcion, nombre_archivo, imagen_url }) => {
+  const savePhotoToDb = async ({ titulo, descripcion, nombre_archivo, imagen_url, imagen_data }) => {
     const formatError = (error) => {
       if (!error) return "";
       if (typeof error === "string") return error;
@@ -111,18 +113,26 @@ const DashboardFotos = () => {
       return await insforgeClient.database.from("fotos").insert(payload).select().single();
     };
 
-    const { data, error } = await tryInsert({ titulo, descripcion, nombre_archivo, imagen_url });
+    const basePayload = { titulo, descripcion, nombre_archivo };
+    const primaryPayload = imagen_data
+      ? { ...basePayload, imagen_data }
+      : { ...basePayload, imagen_url };
+    const fallbackPayload = imagen_data
+      ? { ...basePayload, imagen_url: imagen_data }
+      : { ...basePayload, imagen_data: imagen_url };
+
+    const { data, error } = await tryInsert(primaryPayload);
     if (!error) {
       return { data, error: null };
     }
 
     const message = formatError(error);
-    const needsFallback = /imagen_url/i.test(message) && /(does not exist|no existe|column .* not found|unknown column|not found)/i.test(message);
+    const needsFallback = /(imagen_url|imagen_data)/i.test(message) && /(does not exist|no existe|column .* not found|unknown column|not found)/i.test(message);
     if (!needsFallback) {
       return { data: null, error };
     }
 
-    const fallbackResult = await tryInsert({ titulo, descripcion, nombre_archivo, imagen_data: imagen_url });
+    const fallbackResult = await tryInsert(fallbackPayload);
     if (!fallbackResult.error) {
       return { data: fallbackResult.data, error: null };
     }
@@ -133,8 +143,32 @@ const DashboardFotos = () => {
   const handleUrlChange = (event) => {
     const url = event.target.value;
     setNewImageUrl(url);
+    setSelectedImageName("");
     setPreviewSrc(url);
     setError("");
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("El archivo seleccionado no parece ser una imagen.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      setNewImageUrl(result);
+      setSelectedImageName(file.name);
+      setPreviewSrc(result);
+      setError("");
+    };
+    reader.onerror = () => {
+      setError("No se pudo leer la imagen seleccionada. Intenta con otra foto.");
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (event) => {
@@ -149,12 +183,15 @@ const DashboardFotos = () => {
     setError("");
 
     try {
-      const fileName = newImageUrl.trim().split("/").pop() || "imagen-url";
+      const imageValue = newImageUrl.trim();
+      const isInlineImage = imageValue.startsWith("data:image/");
+      const fileName = selectedImageName || imageValue.split("/").pop() || "imagen-url";
       const payload = {
         titulo: newTitle.trim(),
         descripcion: newDescription.trim(),
         nombre_archivo: fileName,
-        imagen_url: newImageUrl.trim(),
+        imagen_url: isInlineImage ? "" : imageValue,
+        imagen_data: isInlineImage ? imageValue : "",
       };
 
       const { data, error: insertError } = await savePhotoToDb(payload);
@@ -168,7 +205,7 @@ const DashboardFotos = () => {
           title: data.titulo,
           description: data.descripcion,
           name: data.nombre_archivo,
-          src: data.imagen_url || data.imagen_data || newImageUrl.trim(),
+          src: data.imagen_url || data.imagen_data || imageValue,
           _fallback: false,
         },
         ...current,
@@ -179,13 +216,14 @@ const DashboardFotos = () => {
       console.error("Error guardando foto en DB:", submitError);
 
       try {
-        const fileName = newImageUrl.trim().split("/").pop() || "imagen-url";
+        const imageValue = newImageUrl.trim();
+        const fileName = selectedImageName || imageValue.split("/").pop() || "imagen-url";
         const fallback = {
           id: `local-${Date.now()}-${fileName}`,
           title: newTitle.trim(),
           description: newDescription.trim(),
           name: fileName,
-          src: newImageUrl.trim(),
+          src: imageValue,
           _fallback: true,
         };
 
@@ -224,7 +262,8 @@ const DashboardFotos = () => {
         titulo: photo.title || photo.name,
         descripcion: photo.description || "",
         nombre_archivo: photo.name || "",
-        imagen_url: photo.src || "",
+        imagen_url: photo.src?.startsWith("data:image/") ? "" : photo.src || "",
+        imagen_data: photo.src?.startsWith("data:image/") ? photo.src || "" : "",
       };
 
       const { data, error: insertError } = await savePhotoToDb(payload);
@@ -266,7 +305,8 @@ const DashboardFotos = () => {
           titulo: photo.title || photo.name,
           descripcion: photo.description || "",
           nombre_archivo: photo.name || "",
-          imagen_url: photo.src || "",
+          imagen_url: photo.src?.startsWith("data:image/") ? "" : photo.src || "",
+          imagen_data: photo.src?.startsWith("data:image/") ? photo.src || "" : "",
         };
 
         const { data, error: insertError } = await savePhotoToDb(payload);
@@ -446,10 +486,25 @@ const DashboardFotos = () => {
               </div>
 
               <label className="block rounded-3xl border border-slate-200 bg-slate-50 p-4 transition hover:border-emerald-300">
-                <span className="text-sm font-semibold text-slate-700">URL de la imagen</span>
+                <span className="text-sm font-semibold text-slate-700">Subir foto desde el computador</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="mt-3 w-full rounded-2xl border border-dashed border-emerald-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none file:mr-4 file:rounded-full file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
+                />
+                {selectedImageName && (
+                  <p className="mt-2 text-xs font-semibold text-emerald-700">
+                    Foto seleccionada: {selectedImageName}
+                  </p>
+                )}
+              </label>
+
+              <label className="block rounded-3xl border border-slate-200 bg-slate-50 p-4 transition hover:border-emerald-300">
+                <span className="text-sm font-semibold text-slate-700">O pega una URL de imagen</span>
                 <input
                   type="url"
-                  value={newImageUrl}
+                  value={selectedImageName ? "" : newImageUrl}
                   onChange={handleUrlChange}
                   placeholder="https://example.com/tu-foto.jpg"
                   className="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none"

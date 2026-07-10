@@ -6,44 +6,7 @@ import { createClient } from "@insforge/sdk";
 const INSFORGE_BASE_URL = "https://56vbsgp4.us-east.insforge.app";
 const INSFORGE_ANON_KEY = "ik_17fed0a4da225dddf1a566a667c2cb37";
 
-const fallbackGalleryImages = [
-  {
-    id: 1,
-    title: "Cosecha Manual de Café Especial",
-    category: "Cultivos",
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    title: "Monitoreo Técnico en Escuelas de Campo",
-    category: "Asistencia",
-    image: "https://images.unsplash.com/photo-1593113630400-ea4288922497?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    title: "Asociatividad de Mujeres Rurales",
-    category: "Comunidad",
-    image: "https://images.unsplash.com/photo-1589923188900-85dae440047c?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 4,
-    title: "Plántulas en Invernadero de Alta Calidad",
-    category: "Cultivos",
-    image: "https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 5,
-    title: "Inspección Aérea y Drones en Aguacate Hass",
-    category: "Asistencia",
-    image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 6,
-    title: "Taller Comunitario en Nutrición Orgánica",
-    category: "Comunidad",
-    image: "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=800&q=80",
-  },
-];
+const fallbackGalleryImages = [];
 
 const insforgeClient = createClient({
   baseUrl: INSFORGE_BASE_URL,
@@ -168,21 +131,23 @@ export const InteractiveGallery = () => {
 
   return (
     <div className="font-sans">
-      <div className="mb-10 flex flex-wrap justify-center gap-2">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => handleCategoryChange(cat)}
-            className={`rounded-full border px-5 py-2 text-xs font-bold uppercase tracking-wide shadow-sm transition-all duration-300 sm:text-sm ${
-              selectedCategory === cat
-                ? "border-green-700 bg-green-700 text-white shadow-green-700/10"
-                : "border-gray-100 bg-white text-gray-600 hover:bg-green-50 hover:text-secondary-600"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      {galleryImages.length > 0 && (
+        <div className="mb-10 flex flex-wrap justify-center gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => handleCategoryChange(cat)}
+              className={`rounded-full border px-5 py-2 text-xs font-bold uppercase tracking-wide shadow-sm transition-all duration-300 sm:text-sm ${
+                selectedCategory === cat
+                  ? "border-green-700 bg-green-700 text-white shadow-green-700/10"
+                  : "border-gray-100 bg-white text-gray-600 hover:bg-green-50 hover:text-secondary-600"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
 
       {isLoading && galleryImages === fallbackGalleryImages && (
         <div className="mb-4 text-center text-sm text-slate-500">Cargando imágenes desde la base de datos...</div>
